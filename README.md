@@ -1,2 +1,3 @@
-# webServicesPersonalProject
-Start of my personal project for web services
+# financebuddy
+team project for web services
+
