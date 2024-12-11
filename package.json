@@ -13,21 +13,28 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@node-oauth/oauth2-server": "^5.2.0",
     "@types/mongodb": "^4.0.7",
+    "async": "^3.2.6",
     "axios": "^1.7.7",
     "body-parser": "^1.20.3",
-    "dotenv": "^16.4.5",
-    "express": "^4.21.1",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
     "express-session": "^1.18.1",
+    "lodash": "^4.17.21",
     "log": "^6.3.2",
+    "moment": "^2.30.1",
     "mongodb": "^6.12.0",
-    "mongoose": "^8.7.1",
+    "mongoose": "^8.8.4",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
+    "passport-oauth": "^1.0.0",
+    "simple-oauth2": "^5.1.0",
+    "socket.io": "^4.8.1",
     "swagger-jsdoc": "^6.2.8"
   },
   "devDependencies": {
-    "nodemon": "^3.1.6",
+    "nodemon": "^3.1.7",
     "swagger-autogen": "^2.23.7",
     "swagger-ui-express": "^5.0.1"
   }
