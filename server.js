@@ -43,7 +43,7 @@ const setupGoogleAuth = require('./routes/auth');
 setupGoogleAuth(app);
 
 
-const routes = require('../financeBuddy/routes/index');
+const routes = require('./routes/index');
 app.use("/", routes);
 
 // Swagger documentation
