@@ -8,7 +8,7 @@ const doc = {
     description: 'Description of my API',
   },
   host: 'localhost:8080',
-  host: 'https://financebuddy.onrender.com', // Change this to your actual host if needed
+  host: 'https://finanacebuddy.onrender.com', // Change this to your actual host if needed
   schemes: ['http'], // You can change this to ['https'] if your API uses HTTPS
 };
 
