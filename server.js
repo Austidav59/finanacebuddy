@@ -19,6 +19,7 @@ const swaggerOptions = {
     servers: [
       {
         url: 'http://localhost:8080',
+        url: 'https://finanacebuddy.onrender.com',
         description: 'Development server',
       },
     ],
