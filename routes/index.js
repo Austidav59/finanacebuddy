@@ -164,7 +164,7 @@ router.get('/expenses/:userId', controllers.getAllExpenses);
 
 /**
  * @swagger
- * /expenses:
+ * /expenses/add:
  *   post:
  *     summary: Add a new expense
  *     description: Creates a new expense entry for a specified user.
