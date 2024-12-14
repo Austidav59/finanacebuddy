@@ -37,19 +37,14 @@ async function addIncome(newIncome) {
 async function updateIncome(id, updatedIncome) {
     try {
         const result = await client.db("financebuddy").collection("income")
-            .findOneAndUpdate(
-                { _id: ObjectId(id) },
-                { $set: updatedIncome },
-                { returnDocument: 'after' }
-            );
-        if (!result.value) throw new Error('Income not found');
-        return result.value;
+            .updateOne({ _id: new ObjectId(id) }, { $set: updatedIncome });
+        if (result.matchedCount === 0) throw new Error('Income not found');
+        return { _id: id, ...updatedIncome };
     } catch (e) {
-        console.error("Error updating income:", e.message);
+        console.error("Error updating income:", e);
         throw e;
     }
 }
-
 
 async function deleteIncome(id) {
     try {

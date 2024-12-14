@@ -42,19 +42,20 @@ const addIncome = async (req, res) => {
 const updateIncome = async (req, res) => {
     try {
         const id = req.params.id;
-        const updateData = req.body; // Allow updating all fields
-        if (Object.keys(updateData).length === 0) {
-            return res.status(400).json({ error: "No update data provided." });
+        const { amount, source } = req.body;
+        if (!amount || !source) {
+            return res.status(400).json({ error: "All fields are required." });
         }
-        const updatedIncome = await connectDB.updateIncome(id, updateData);
+        const updatedIncome = await connectDB.updateIncome(id, { amount, source });
+        if (!updatedIncome) {
+            return res.status(404).json({ error: "Income not found or update failed" });
+        }
         res.status(200).json({ message: "Income updated successfully", updatedIncome });
     } catch (error) {
-        console.error("Error updating income:", error.message);
-        res.status(error.message.includes("Income not found") ? 404 : 500)
-           .json({ error: error.message });
+        console.error("Error updating income:", error);
+        res.status(500).json({ error: "Error updating income" });
     }
 };
-
 
 
 const deleteIncome = async (req, res) => {
