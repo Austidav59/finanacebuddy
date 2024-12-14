@@ -95,15 +95,15 @@ const getAllExpenses = async (req, res) => {
 
 const addExpense = async (req, res) => {
     try {
-        const { userId, amount, category, date } = req.body;
+        const { userId, amount, category, description, dateIncurred } = req.body;
 
         // Validate input fields to ensure all required data is provided
-        if (!userId || !amount || !category || !date) {
+        if (!userId || !amount || !category || !description || !dateIncurred) {
             return res.status(400).json({ error: "All fields are required." });
         }
 
         // Add the new expense to the database and await its result
-        const newExpense = await connectDB.addExpense({ userId, amount, category, date });
+        const newExpense = await connectDB.addExpense({ userId, amount, category, description, dateIncurred });
 
         // Respond with a success message and the ID of the newly created expense
         return res.status(201).json({
@@ -116,6 +116,7 @@ const addExpense = async (req, res) => {
         return res.status(500).json({ error: "Error adding expense" });
     }
 };
+
 
 
 
