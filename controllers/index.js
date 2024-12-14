@@ -277,48 +277,59 @@ const updateCreditCard = async (req, res) => {
             return res.status(400).json({ error: "All fields are required." });
         }
 
-        // Additional validations
-        if (!/^\d{16}$/.test(cardNumber)) {
+        // Log received card number for debugging
+        console.log("Received card number:", cardNumber);
+
+        // Clean and validate the card number
+        const cleanCardNumber = cardNumber.replace(/\D/g, ''); // Remove all non-digit characters
+
+        if (cleanCardNumber.length !== 16) {
             return res.status(400).json({ error: "Invalid card number format." });
         }
+        
         if (new Date(expirationDate) <= new Date()) {
             return res.status(400).json({ error: "Expiration date must be in the future." });
         }
+        
         if (creditLimit < 0 || currentBalance < 0) {
             return res.status(400).json({ error: "Credit limit and current balance must be non-negative." });
         }
 
-        // Mask the card number
-        const maskedCardNumber = cardNumber.replace(/\d(?=\d{4})/g, "*");
+        // Mask the card number for storage
+        const maskedCardNumber = cleanCardNumber.replace(/\d(?=\d{4})/g, "*");
 
-        const updatedCreditCard = await connectDB.updateCreditCard(id, {
+        // Prepare updated credit card data
+        const updatedCreditCardData = {
             cardNumber: maskedCardNumber,
             cardholderName,
             expirationDate: new Date(expirationDate),
             creditLimit,
             currentBalance
-        });
+        };
+
+        const updatedCreditCard = await connectDB.updateCreditCard(id, updatedCreditCardData);
 
         if (!updatedCreditCard) {
             return res.status(404).json({ error: "Credit card not found or update failed" });
         }
 
+        // Respond with the updated credit card details in the specified format
         res.status(200).json({ 
-            message: "Credit card updated successfully",
-            updatedCard: {
-                id: updatedCreditCard._id,
-                cardholderName: updatedCreditCard.cardholderName,
-                expirationDate: updatedCreditCard.expirationDate,
-                lastFourDigits: updatedCreditCard.cardNumber.slice(-4),
-                creditLimit: updatedCreditCard.creditLimit,
-                currentBalance: updatedCreditCard.currentBalance
-            }
+            _id: updatedCreditCard._id.toString(), // Convert ObjectId to string for JSON response
+            userId: updatedCreditCard.userId,
+            cardNumber: updatedCreditCard.cardNumber,
+            cardholderName: updatedCreditCard.cardholderName,
+            expirationDate: updatedCreditCard.expirationDate,
+            cvv: "***", // Masked CVV as per your requirement
+            creditLimit: updatedCreditCard.creditLimit,
+            currentBalance: updatedCreditCard.currentBalance
         });
     } catch (error) {
         console.error("Error updating credit card:", error);
         res.status(500).json({ error: "Error updating credit card" });
     }
 };
+
 
 
 

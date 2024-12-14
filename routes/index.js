@@ -397,7 +397,7 @@ router.post('/creditcards/add', controllers.addCreditCard);
 
 /**
  * @swagger
- * /creditcards/update/:id:
+ * /creditcards/update/{id}:
  *   put:
  *     summary: Update an existing credit card
  *     description: Updates the details of a specified credit card by its ID.
@@ -579,7 +579,7 @@ router.post('/debitcards/add', controllers.addDebitCard);
 
 /**
  * @swagger
- * /debitcards/update/:id:
+ * /debitcards/update/{id}:
  *   put:
  *     summary: Update an existing debit card
  *     description: Updates the details of a specified debit card by its ID.
@@ -640,7 +640,7 @@ router.put('/debitcards/update/:id', controllers.updateDebitCard);
 
 /**
  * @swagger
- * /debitcards/delete/:id:
+ * /debitcards/delete/{id}:
  *   delete:
  *     summary: Delete a debit card
  *     description: Deletes a specified debit card by its ID.
