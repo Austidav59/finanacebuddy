@@ -38,7 +38,7 @@ async function updateIncome(id, updatedIncome) {
     try {
         const result = await client.db("financebuddy").collection("income")
             .findOneAndUpdate(
-                { _id: new ObjectId(id) },
+                { _id: ObjectId(id) },
                 { $set: updatedIncome },
                 { returnDocument: 'after' }
             );
