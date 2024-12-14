@@ -262,13 +262,15 @@ const addCreditCard = async (req, res) => {
 
 const updateCreditCard = async (req, res) => {
     try {
-        const id = req.params.id;
-        const { cardNumber, cardholderName, expirationDate, creditLimit, currentBalance } = req.body;
+        const id = req.params.id.trim(); // Trim any whitespace
+        console.log("Received ID:", id); // Log the received ID
 
         // Validate ID format
         if (!ObjectId.isValid(id)) {
             return res.status(400).json({ error: "Invalid ID format" });
         }
+
+        const { cardNumber, cardholderName, expirationDate, creditLimit, currentBalance } = req.body;
 
         // Enhanced input validation
         if (!cardNumber || !cardholderName || !expirationDate || creditLimit === undefined || currentBalance === undefined) {
@@ -317,6 +319,7 @@ const updateCreditCard = async (req, res) => {
         res.status(500).json({ error: "Error updating credit card" });
     }
 };
+
 
 
 
