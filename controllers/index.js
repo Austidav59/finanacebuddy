@@ -123,25 +123,47 @@ const addExpense = async (req, res) => {
 const updateExpense = async (req, res) => {
     try {
         const id = req.params.id;
-        const { amount, category, date } = req.body;
+        const { amount, category, description, dateIncurred } = req.body;
 
-        // Validate input fields to ensure all required data is provided
-        if (!amount || !category || !date) {
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({ error: "Invalid expense ID format" });
+        }
+
+        // Enhanced input validation
+        if (amount === undefined || !category || !description || !dateIncurred) {
             return res.status(400).json({ error: "All fields are required." });
         }
 
-        // Update the expense in the database and await its result
-        const updatedExpense = await connectDB.updateExpense(id, { amount, category, date });
+        // Additional validations
+        if (typeof amount !== 'number' || amount <= 0) {
+            return res.status(400).json({ error: "Amount must be a positive number." });
+        }
+        if (new Date(dateIncurred) > new Date()) {
+            return res.status(400).json({ error: "Date incurred cannot be in the future." });
+        }
 
-        // Check if the update was successful or if the expense was not found
+        const updatedExpense = await connectDB.updateExpense(id, {
+            amount,
+            category,
+            description,
+            dateIncurred: new Date(dateIncurred)
+        });
+
         if (!updatedExpense) {
             return res.status(404).json({ error: "Expense not found or update failed" });
         }
 
-        // Respond with a success message and the updated expense details
-        res.status(200).json({ message: "Expense updated successfully", updatedExpense });
+        res.status(200).json({
+            message: "Expense updated successfully",
+            updatedExpense: {
+                id: updatedExpense._id,
+                amount: updatedExpense.amount,
+                category: updatedExpense.category,
+                description: updatedExpense.description,
+                dateIncurred: updatedExpense.dateIncurred
+            }
+        });
     } catch (error) {
-        // Log the error and respond with a server error message
         console.error("Error updating expense:", error);
         res.status(500).json({ error: "Error updating expense" });
     }
@@ -220,39 +242,66 @@ const addCreditCard = async (req, res) => {
 
 
 
+const { ObjectId } = require('mongodb'); // Ensure this is imported at the top of your file
+
 const updateCreditCard = async (req, res) => {
     try {
         const id = req.params.id;
-        const { cardNumber, cardholderName, expirationDate, cvv, creditLimit, currentBalance } = req.body;
+        const { cardNumber, cardholderName, expirationDate, creditLimit, currentBalance } = req.body;
 
-        // Validate input fields to ensure all required data is provided
-        if (!cardNumber || !cardholderName || !expirationDate || !cvv || !creditLimit || currentBalance === undefined) {
+        // Validate ID format
+        if (!ObjectId.isValid(id)) {
+            return res.status(400).json({ error: "Invalid ID format" });
+        }
+
+        // Enhanced input validation
+        if (!cardNumber || !cardholderName || !expirationDate || creditLimit === undefined || currentBalance === undefined) {
             return res.status(400).json({ error: "All fields are required." });
         }
 
-        // Update the credit card in the database and await its result
+        // Additional validations
+        if (!/^\d{16}$/.test(cardNumber)) {
+            return res.status(400).json({ error: "Invalid card number format." });
+        }
+        if (new Date(expirationDate) <= new Date()) {
+            return res.status(400).json({ error: "Expiration date must be in the future." });
+        }
+        if (creditLimit < 0 || currentBalance < 0) {
+            return res.status(400).json({ error: "Credit limit and current balance must be non-negative." });
+        }
+
+        // Mask the card number
+        const maskedCardNumber = cardNumber.replace(/\d(?=\d{4})/g, "*");
+
         const updatedCreditCard = await connectDB.updateCreditCard(id, {
-            cardNumber,
+            cardNumber: maskedCardNumber,
             cardholderName,
-            expirationDate,
-            cvv,
+            expirationDate: new Date(expirationDate),
             creditLimit,
             currentBalance
         });
 
-        // Check if the update was successful or if the credit card was not found
         if (!updatedCreditCard) {
             return res.status(404).json({ error: "Credit card not found or update failed" });
         }
 
-        // Respond with a success message and the updated credit card details
-        res.status(200).json({ message: "Credit card updated successfully", updatedCreditCard });
+        res.status(200).json({ 
+            message: "Credit card updated successfully",
+            updatedCard: {
+                id: updatedCreditCard._id,
+                cardholderName: updatedCreditCard.cardholderName,
+                expirationDate: updatedCreditCard.expirationDate,
+                lastFourDigits: updatedCreditCard.cardNumber.slice(-4),
+                creditLimit: updatedCreditCard.creditLimit,
+                currentBalance: updatedCreditCard.currentBalance
+            }
+        });
     } catch (error) {
-        // Log the error and respond with a server error message
         console.error("Error updating credit card:", error);
         res.status(500).json({ error: "Error updating credit card" });
     }
 };
+
 
 
 
@@ -298,32 +347,43 @@ const getAllDebitCards = async (req, res) => {
 };
 
 
-
 const addDebitCard = async (req, res) => {
     try {
-        const { userId, cardNumber, cardholderName, expirationDate, accountBalance } = req.body;
+        const { userId, cardNumber, cardholderName, expirationDate, accountBalance, bankName } = req.body;
 
-        // Validate input fields to ensure all required data is provided
-        if (!userId || !cardNumber || !cardholderName || !expirationDate || accountBalance === undefined) {
+        // Enhanced input validation
+        if (!userId || !cardNumber || !cardholderName || !expirationDate || accountBalance === undefined || !bankName) {
             return res.status(400).json({ error: "All fields are required." });
         }
 
-        // Add the new debit card to the database and await its result
+        // Additional validations (examples)
+        if (!/^\d{16}$/.test(cardNumber)) {
+            return res.status(400).json({ error: "Invalid card number format." });
+        }
+        if (new Date(expirationDate) <= new Date()) {
+            return res.status(400).json({ error: "Expiration date must be in the future." });
+        }
+        if (accountBalance < 0) {
+            return res.status(400).json({ error: "Account balance must be non-negative." });
+        }
+
+        // Mask the card number before storing
+        const maskedCardNumber = cardNumber.replace(/\d(?=\d{4})/g, "*");
+
         const newDebitCard = await connectDB.addDebitCard({
             userId,
-            cardNumber,
+            cardNumber: maskedCardNumber,
             cardholderName,
-            expirationDate,
-            accountBalance
+            expirationDate: new Date(expirationDate),
+            accountBalance,
+            bankName
         });
 
-        // Respond with a success message and the ID of the newly created debit card
         res.status(201).json({
             message: "Debit card added successfully",
             debitCardId: newDebitCard._id
         });
     } catch (error) {
-        // Log the error and respond with a server error message
         console.error("Error adding debit card:", error);
         res.status(500).json({ error: "Error adding debit card" });
     }
