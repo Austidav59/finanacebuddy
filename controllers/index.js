@@ -92,30 +92,47 @@ const getAllExpenses = async (req, res) => {
 };
 
 
-
 const addExpense = async (req, res) => {
     try {
         const { userId, amount, category, description, dateIncurred } = req.body;
 
-        // Validate input fields to ensure all required data is provided
-        if (!userId || !amount || !category || !description || !dateIncurred) {
-            return res.status(400).json({ error: "All fields are required." });
+        // Enhanced validation
+        if (!userId || amount === undefined || amount === null || !category || !description || !dateIncurred) {
+            return res.status(400).json({ error: "All fields are required and amount must be provided." });
         }
 
-        // Add the new expense to the database and await its result
-        const newExpense = await connectDB.addExpense({ userId, amount, category, description, dateIncurred });
+        // Convert amount to number if it's a string
+        const numericAmount = Number(amount);
+        if (isNaN(numericAmount)) {
+            return res.status(400).json({ error: "Amount must be a valid number." });
+        }
 
-        // Respond with a success message and the ID of the newly created expense
+        // Validate date format
+        const date = new Date(dateIncurred);
+        if (isNaN(date.getTime())) {
+            return res.status(400).json({ error: "Invalid date format for dateIncurred." });
+        }
+
+        // Add the new expense to the database
+        const newExpense = await connectDB.addExpense({ 
+            userId, 
+            amount: numericAmount, 
+            category, 
+            description, 
+            dateIncurred: date 
+        });
+
         return res.status(201).json({
             message: "Expense added successfully",
             expenseId: newExpense._id,
+            expense: newExpense
         });
     } catch (error) {
-        // Log the error and respond with a server error message
-        console.error("Error adding expense:", error);
-        return res.status(500).json({ error: "Error adding expense" });
+        console.error("Error adding expense:", error.message, error.stack);
+        return res.status(500).json({ error: "Error adding expense", details: error.message });
     }
 };
+
 
 
 

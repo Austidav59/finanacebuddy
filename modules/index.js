@@ -68,13 +68,22 @@ async function getAllExpenses(userId) {
 
 async function addExpense(newExpense) {
     try {
-        const result = await client.db("financebuddy").collection("expenses").insertOne(newExpense);
-        return { _id: result.insertedId, ...newExpense };
+        const result = await client.db("financebuddy").collection("expenses").insertOne({
+            ...newExpense,
+            createdAt: new Date()  // Add a timestamp for when the expense was created
+        });
+        
+        // Fetch the newly inserted document
+        const insertedExpense = await client.db("financebuddy").collection("expenses")
+            .findOne({ _id: result.insertedId });
+        
+        return insertedExpense;
     } catch (e) {
-        console.error("Error adding new expense:", e);
+        console.error("Error adding new expense:", e.message, e.stack);
         throw e;
     }
 }
+
 
 async function updateExpense(id, updatedExpense) {
     try {
