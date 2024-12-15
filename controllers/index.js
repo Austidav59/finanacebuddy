@@ -386,19 +386,26 @@ const addDebitCard = async (req, res) => {
             return res.status(400).json({ error: "All fields are required." });
         }
 
-        // Additional validations (examples)
-        if (!/^\d{16}$/.test(cardNumber)) {
-            return res.status(400).json({ error: "Invalid card number format." });
+        // Clean and validate card number
+        const cleanCardNumber = cardNumber.replace(/\s/g, '');
+        if (!/^\d{16}$/.test(cleanCardNumber)) {
+            return res.status(400).json({ error: "Invalid card number format. Must be 16 digits." });
         }
-        if (new Date(expirationDate) <= new Date()) {
-            return res.status(400).json({ error: "Expiration date must be in the future." });
+
+        // Validate expiration date
+        const sixMonthsFromNow = new Date();
+        sixMonthsFromNow.setMonth(sixMonthsFromNow.getMonth() + 6);
+        if (new Date(expirationDate) <= sixMonthsFromNow) {
+            return res.status(400).json({ error: "Expiration date must be at least 6 months in the future." });
         }
-        if (accountBalance < 0) {
-            return res.status(400).json({ error: "Account balance must be non-negative." });
+
+        // Validate account balance
+        if (typeof accountBalance !== 'number' || accountBalance < 0) {
+            return res.status(400).json({ error: "Account balance must be a non-negative number." });
         }
 
         // Mask the card number before storing
-        const maskedCardNumber = cardNumber.replace(/\d(?=\d{4})/g, "*");
+        const maskedCardNumber = cleanCardNumber.replace(/\d(?=\d{4})/g, "*");
 
         const newDebitCard = await connectDB.addDebitCard({
             userId,
@@ -418,7 +425,6 @@ const addDebitCard = async (req, res) => {
         res.status(500).json({ error: "Error adding debit card" });
     }
 };
-
 
 
 const updateDebitCard = async (req, res) => {
